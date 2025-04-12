@@ -264,7 +264,7 @@ const createRelatedEntryLink = (variant: "toast" | "modal") => (props: LinkProps
   const { href, children } = props
   const entryId = isBizId(href) ? href : null
 
-  const { present } = useModalStack()
+  const { present, dismiss } = useModalStack()
 
   if (!entryId) {
     return <MarkdownLink {...props} />
@@ -280,10 +280,13 @@ const createRelatedEntryLink = (variant: "toast" | "modal") => (props: LinkProps
         }
 
         if (variant === "toast") {
+          dismiss("entry-preview-toast")
+
           present({
             ...basePresentProps,
+            id: "entry-preview-toast",
             CustomModalComponent: PlainModal,
-            content: () => <EntryToastPreview entryId={entryId} />,
+            content: ({ dismiss }) => <EntryToastPreview entryId={entryId} onClose={dismiss} />,
             overlay: false,
             modal: false,
             modalContainerClassName: "right-0 left-[auto]",
@@ -325,7 +328,7 @@ const createRelatedEntryLink = (variant: "toast" | "modal") => (props: LinkProps
   )
 }
 
-const EntryToastPreview = ({ entryId }: { entryId: string }) => {
+const EntryToastPreview = ({ entryId, onClose }: { entryId: string; onClose: () => void }) => {
   useAuthQuery(Queries.entries.byId(entryId))
 
   const variants: Record<string, Variant> = {
@@ -440,6 +443,14 @@ const EntryToastPreview = ({ entryId }: { entryId: string }) => {
           {/* End right column */}
         </div>
       </div>
+
+      <button
+        type="button"
+        className="center hover:bg-theme-button-hover absolute right-2 top-2 rounded-lg p-2"
+        onClick={onClose}
+      >
+        <i className="i-mgc-close-cute-re" />
+      </button>
     </m.div>
   )
 }
